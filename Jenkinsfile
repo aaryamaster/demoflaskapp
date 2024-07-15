@@ -1,45 +1,27 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = 'demo_flask_app'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/DemoFlaskApp.git'
+                git 'https://github.com/aaryamaster/demoflaskapp.git'
             }
         }
-        stage('Test') {
+        stage('Install Dependencies') {
             steps {
-                sh 'pytest'
-            }
-            post {
-                always {
-                    junit 'tests/**/*.xml'
-                }
+                sh 'pip install -r requirements.txt'
             }
         }
-        stage('Build') {
+        stage('Run Tests') {
             steps {
-                script {
-                    dockerImage = docker.build("${env.DOCKER_IMAGE}:${env.BUILD_ID}")
-                }
+                sh 'python -m unittest discover -s tests'
             }
         }
         stage('Deploy') {
             steps {
-                script {
-                    dockerImage.run('-p 5000:5000')
-                }
+                sh 'echo "Deploying to production..."'
+                // Add your deployment steps here
             }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
